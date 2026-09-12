@@ -1,0 +1,8 @@
+streamlit
+pandas
+openpyxl
+python-dotenv
+requests
+pypdf
+faiss-cpu
+numpy
