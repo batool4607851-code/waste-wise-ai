@@ -11,6 +11,30 @@ def calculate_basic_metrics(df: pd.DataFrame) -> dict:
     }
 
 
+def calculate_waste_kpis(
+    df: pd.DataFrame,
+    production_column: str,
+    waste_column: str,
+) -> dict:
+    """Calculate core production and waste KPIs."""
+
+    production = pd.to_numeric(
+        df[production_column], errors="coerce"
+    ).sum()
+
+    waste = pd.to_numeric(
+        df[waste_column], errors="coerce"
+    ).sum()
+
+    waste_rate = (waste / production * 100) if production else 0
+
+    return {
+        "total_production": production,
+        "total_waste": waste,
+        "waste_rate": waste_rate,
+    }
+
+
 def get_numeric_summary(df: pd.DataFrame) -> pd.DataFrame:
     """Return descriptive statistics for numeric columns."""
     return df.describe().T
