@@ -62,3 +62,20 @@ def calculate_group_waste_rates(
         "waste_rate",
         ascending=False,
     )
+
+
+def calculate_top_waste_reasons(
+    df: pd.DataFrame,
+    waste_reason_column: str,
+    waste_column: str,
+) -> pd.DataFrame:
+    """Calculate total waste by waste reason."""
+
+    result = (
+        df.groupby(waste_reason_column)[waste_column]
+        .sum()
+        .reset_index()
+        .sort_values(waste_column, ascending=False)
+    )
+
+    return result
