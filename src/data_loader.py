@@ -55,9 +55,7 @@ def load_data(file):
         pdf_text = "\n\n".join(text).strip()
 
         if not pdf_text:
-            raise ValueError(
-                "No readable text was found in the PDF."
-            )
+            raise ValueError("No readable text was found in the PDF.")
 
         return pdf_text
 
@@ -69,7 +67,6 @@ def load_data(file):
 
 def validate_data(df):
     """Return basic validation information for tabular data."""
-
     return {
         "rows": len(df),
         "columns": len(df.columns),
