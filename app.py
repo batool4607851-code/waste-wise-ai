@@ -1,7 +1,7 @@
 import streamlit as st
 
-from src.data_loader import load_data
-from src.analytics import calculate_basic_metrics
+from src.data_loader import load_data, validate_data
+from src.analytics import calculate_basic_metrics, calculate_group_waste_rates
 
 
 st.set_page_config(
@@ -23,25 +23,79 @@ uploaded_file = st.file_uploader(
 if uploaded_file:
     try:
         df = load_data(uploaded_file)
+        validation = validate_data(df)
 
         st.success("File uploaded successfully.")
 
         st.subheader("Data Preview")
         st.dataframe(df.head(10), use_container_width=True)
 
-        metrics = calculate_basic_metrics(df)
+        st.subheader("Dataset Information")
 
-        st.subheader("Basic Dataset Information")
+        col1, col2, col3, col4 = st.columns(4)
 
-        col1, col2 = st.columns(2)
+        col1.metric("Rows", validation["rows"])
+        col2.metric("Columns", validation["columns"])
+        col3.metric("Missing Values", validation["missing_values"])
+        col4.metric("Duplicate Rows", validation["duplicate_rows"])
 
-        with col1:
-            st.metric("Rows", metrics["rows"])
+        st.divider()
 
-        with col2:
-            st.metric("Columns", metrics["columns"])
+        numeric_columns = df.select_dtypes(include="number").columns.tolist()
+
+        if len(numeric_columns) >= 2:
+            st.subheader("Waste Rate Analysis")
+
+            production_column = st.selectbox(
+                "Production column",
+                numeric_columns,
+            )
+
+            waste_options = [
+                column
+                for column in numeric_columns
+                if column != production_column
+            ]
+
+            waste_column = st.selectbox(
+                "Waste column",
+                waste_options,
+            )
+
+            group_options = [
+                column
+                for column in df.columns
+                if column not in [production_column, waste_column]
+            ]
+
+            if group_options:
+                group_column = st.selectbox(
+                    "Group analysis by",
+                    group_options,
+                )
+
+                if st.button("Analyze Waste Rates"):
+                    result = calculate_group_waste_rates(
+                        df,
+                        group_column=group_column,
+                        production_column=production_column,
+                        waste_column=waste_column,
+                    )
+
+                    st.dataframe(
+                        result,
+                        use_container_width=True,
+                    )
+            else:
+                st.warning("No suitable grouping column was found.")
+
+        else:
+            st.info(
+                "At least two numeric columns are required for waste-rate analysis."
+            )
 
     except Exception as e:
         st.error(f"Could not process the file: {e}")
+
 else:
     st.info("Upload a CSV or XLSX file to begin analysis.")
