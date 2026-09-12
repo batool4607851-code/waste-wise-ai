@@ -29,11 +29,10 @@ def calculate_waste_kpis(
     waste_rate = (waste / production * 100) if production else 0
 
     return {
-        "total_production": production,
-        "total_waste": waste,
-        "waste_rate": waste_rate,
+        "total_production": int(production),
+        "total_waste": int(waste),
+        "waste_rate": float(waste_rate),
     }
-
 
 def get_numeric_summary(df: pd.DataFrame) -> pd.DataFrame:
     """Return descriptive statistics for numeric columns."""
