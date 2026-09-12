@@ -2,14 +2,17 @@
 import pandas as pd
 from pypdf import PdfReader
 
+from src.data_mapper import normalize_name
+
 
 def clean_columns(df):
-    df.columns = (
-        df.columns.astype(str)
-        .str.strip()
-        .str.lower()
-        .str.replace(" ", "_", regex=False)
-    )
+    df = df.copy()
+
+    df.columns = [
+        normalize_name(column)
+        for column in df.columns
+    ]
+
     return df
 
 
@@ -26,15 +29,19 @@ def load_data(file):
         reader = PdfReader(file)
 
         text = []
+
         for page in reader.pages:
             page_text = page.extract_text()
+
             if page_text:
                 text.append(page_text)
 
         pdf_text = "\n".join(text).strip()
 
         if not pdf_text:
-            raise ValueError("No readable text was found in the PDF.")
+            raise ValueError(
+                "No readable text was found in the PDF."
+            )
 
         lines = [
             line.strip()
@@ -47,8 +54,6 @@ def load_data(file):
         for line in lines:
             parts = line.split()
 
-            # Expected PDF row:
-            # date product line shift process reason production waste
             if len(parts) < 8:
                 continue
 
@@ -65,16 +70,18 @@ def load_data(file):
             process = parts[4]
             reason = " ".join(parts[5:-2])
 
-            rows.append({
-                "date": date,
-                "product": product,
-                "line": line_name,
-                "shift": shift,
-                "process": process,
-                "waste_reason": reason,
-                "production_kg": production,
-                "waste_kg": waste,
-            })
+            rows.append(
+                {
+                    "date": date,
+                    "product": product,
+                    "line": line_name,
+                    "shift": shift,
+                    "process": process,
+                    "waste_reason": reason,
+                    "production_kg": production,
+                    "waste_kg": waste,
+                }
+            )
 
         if not rows:
             raise ValueError(
@@ -89,7 +96,9 @@ def load_data(file):
         )
 
     if df.empty:
-        raise ValueError("The uploaded file contains no data.")
+        raise ValueError(
+            "The uploaded file contains no data."
+        )
 
     return clean_columns(df)
 
@@ -98,7 +107,11 @@ def validate_data(df):
     return {
         "rows": len(df),
         "columns": len(df.columns),
-        "missing_values": int(df.isna().sum().sum()),
-        "duplicate_rows": int(df.duplicated().sum()),
+        "missing_values": int(
+            df.isna().sum().sum()
+        ),
+        "duplicate_rows": int(
+            df.duplicated().sum()
+        ),
         "columns": list(df.columns),
     }
