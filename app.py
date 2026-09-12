@@ -35,7 +35,7 @@ if uploaded_file:
         col1, col2, col3, col4 = st.columns(4)
 
         col1.metric("Rows", validation["rows"])
-        col2.metric("Columns", validation["columns"])
+        col2.metric("Columns", len(validation["columns"]))
         col3.metric("Missing Values", validation["missing_values"])
         col4.metric("Duplicate Rows", validation["duplicate_rows"])
 
