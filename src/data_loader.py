@@ -1,17 +1,16 @@
-%%writefile /content/waste-wise-ai/src/data_loader.py
-
 import pandas as pd
 from pypdf import PdfReader
-
 
 SUPPORTED_EXTENSIONS = (".csv", ".xlsx", ".xls", ".pdf")
 
 
 def load_data(file):
     """Load CSV/Excel data or extract text from a PDF."""
+
     filename = file.name.lower()
 
     if filename.endswith(".csv"):
+
         df = pd.read_csv(file)
 
         if df.empty:
@@ -27,6 +26,7 @@ def load_data(file):
         return df
 
     elif filename.endswith((".xlsx", ".xls")):
+
         df = pd.read_excel(file)
 
         if df.empty:
@@ -42,6 +42,7 @@ def load_data(file):
         return df
 
     elif filename.endswith(".pdf"):
+
         reader = PdfReader(file)
 
         text = []
@@ -55,18 +56,20 @@ def load_data(file):
         pdf_text = "\n\n".join(text).strip()
 
         if not pdf_text:
-            raise ValueError("No readable text was found in the PDF.")
+            raise ValueError(
+                "No readable text was found in the PDF."
+            )
 
         return pdf_text
 
     else:
         raise ValueError(
-            "Unsupported file type. Please upload a CSV, XLSX, XLS, or PDF file."
+            "Unsupported file type. "
+            "Please upload a CSV, XLSX, XLS, or PDF file."
         )
 
 
 def validate_data(df):
-    """Return basic validation information for tabular data."""
     return {
         "rows": len(df),
         "columns": len(df.columns),

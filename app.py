@@ -1,5 +1,3 @@
-%%writefile /content/waste-wise-ai/app.py
-
 import streamlit as st
 
 from src.data_loader import load_data, validate_data
@@ -9,7 +7,6 @@ from src.analytics import (
     calculate_top_waste_reasons,
 )
 
-
 st.set_page_config(
     page_title="WasteWise AI",
     page_icon="♻️",
@@ -18,7 +15,6 @@ st.set_page_config(
 
 st.title("♻️ WasteWise AI")
 st.subheader("Turn factory data into actionable waste intelligence.")
-
 st.divider()
 
 uploaded_file = st.file_uploader(
@@ -30,15 +26,12 @@ if uploaded_file:
     try:
         file_name = uploaded_file.name.lower()
 
-        # PDF handling
         if file_name.endswith(".pdf"):
-
             pdf_text = load_data(uploaded_file)
 
             st.success("PDF uploaded successfully.")
 
             st.subheader("Document Preview")
-
             st.text_area(
                 "Extracted PDF text",
                 pdf_text,
@@ -50,9 +43,7 @@ if uploaded_file:
                 "AI document reasoning will be added in a later phase."
             )
 
-        # CSV / Excel handling
         else:
-
             df = load_data(uploaded_file)
             validation = validate_data(df)
 
@@ -69,15 +60,9 @@ if uploaded_file:
             col1, col2, col3, col4 = st.columns(4)
 
             col1.metric("Rows", validation["rows"])
-            col2.metric("Columns", len(validation["columns"]))
-            col3.metric(
-                "Missing Values",
-                validation["missing_values"],
-            )
-            col4.metric(
-                "Duplicate Rows",
-                validation["duplicate_rows"],
-            )
+            col2.metric("Columns", validation["columns"])
+            col3.metric("Missing Values", validation["missing_values"])
+            col4.metric("Duplicate Rows", validation["duplicate_rows"])
 
             st.divider()
 
