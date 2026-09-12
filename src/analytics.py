@@ -34,6 +34,31 @@ def calculate_waste_kpis(
         "waste_rate": float(waste_rate),
     }
 
-def get_numeric_summary(df: pd.DataFrame) -> pd.DataFrame:
-    """Return descriptive statistics for numeric columns."""
-    return df.describe().T
+
+def calculate_group_waste_rates(
+    df: pd.DataFrame,
+    group_column: str,
+    production_column: str,
+    waste_column: str,
+) -> pd.DataFrame:
+    """Calculate waste rate for each product, line, shift, or category."""
+
+    grouped = (
+        df.groupby(group_column)
+        .agg(
+            production=(production_column, "sum"),
+            waste=(waste_column, "sum"),
+        )
+        .reset_index()
+    )
+
+    grouped["waste_rate"] = (
+        grouped["waste"]
+        / grouped["production"]
+        * 100
+    ).fillna(0)
+
+    return grouped.sort_values(
+        "waste_rate",
+        ascending=False,
+    )
