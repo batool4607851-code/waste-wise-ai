@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from src.rag import build_chunks, build_vector_index, retrieve_chunks
+from src.groq_client import generate_answer
 from src.data_loader import load_data, validate_data
 from src.analytics import (
     calculate_waste_kpis,
@@ -618,3 +619,121 @@ elif page in [
                 st.success(
                     "No unusually high-loss records detected."
                 )
+
+
+# =========================================================
+# SOP / RAG + GROQ
+# =========================================================
+
+elif page == "SOP / RAG":
+
+    st.header("📘 SOP / RAG Assistant")
+
+    st.write(
+        "Upload an SOP PDF, ask a question, and WasteWise AI will "
+        "retrieve relevant SOP evidence and generate a grounded answer."
+    )
+
+    sop_file = st.file_uploader(
+        "Upload SOP PDF",
+        type=["pdf"],
+        key="sop_rag_upload",
+    )
+
+    if sop_file:
+
+        sop_path = "/content/waste-wise-ai/uploaded_sop.pdf"
+
+        with open(sop_path, "wb") as f:
+            f.write(sop_file.getbuffer())
+
+        try:
+
+            chunks = build_chunks(sop_path)
+
+            model, index, stored_chunks = build_vector_index(chunks)
+
+            st.success(
+                f"SOP processed successfully: {len(chunks)} text chunks created."
+            )
+
+            question = st.text_input(
+                "Ask a question about the SOP",
+                placeholder=(
+                    "e.g. What should the supervisor investigate "
+                    "when waste is unusually high?"
+                ),
+                key="sop_question",
+            )
+
+            if question.strip():
+
+                results = retrieve_chunks(
+                    question,
+                    model,
+                    index,
+                    stored_chunks,
+                    top_k=5,
+                )
+
+                context = "\n\n".join(
+                    [
+                        (
+                            f"[Source: {result['source']}, "
+                            f"Page: {result['page']}]\n"
+                            f"{result['text']}"
+                        )
+                        for result in results
+                    ]
+                )
+
+                try:
+
+                    answer = generate_answer(
+                        question,
+                        context,
+                    )
+
+                    st.subheader("🤖 WasteWise AI Answer")
+
+                    st.write(answer)
+
+                except Exception as e:
+
+                    st.error(
+                        f"Could not generate AI answer: {e}"
+                    )
+
+                st.subheader("🔎 Retrieved SOP Evidence")
+
+                for i, result in enumerate(
+                    results,
+                    start=1,
+                ):
+
+                    with st.expander(
+                        f"Evidence {i} — Page {result['page']}"
+                    ):
+
+                        st.write(
+                            f"**Source:** {result['source']}"
+                        )
+
+                        st.write(
+                            f"**Relevance Score:** "
+                            f"{result['score']:.3f}"
+                        )
+
+                        st.write(result["text"])
+
+        except Exception as e:
+
+            st.error(
+                f"Could not process the SOP: {e}"
+            )
+
+    else:
+
+        st.info(
+            "Upload an SOP PDF to start asking questions."
+        )
