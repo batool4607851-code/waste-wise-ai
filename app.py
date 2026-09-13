@@ -335,7 +335,7 @@ elif page in [
             with kpi2:
                 st.metric(
                     "Total Loss",
-                    f"{kpis['total_loss']:,.0f}"
+                    f"{kpis['total_waste']:,.0f}"
                 )
 
             with kpi3:
