@@ -719,25 +719,48 @@ elif page == "SOP / RAG":
                         f"Could not generate AI answer: {e}"
                     )
 
-                st.subheader("🔎 Retrieved SOP Evidence")
+                st.subheader("🔎 SOP Evidence")
+                st.caption(
+                    f"{len(results)} relevant SOP section(s) found. "
+                    "Expand an item to review the supporting evidence."
+                )
 
                 for i, result in enumerate(
                     results,
                     start=1,
                 ):
 
+                    relevance_pct = min(
+                        max(float(result["score"]), 0),
+                        1,
+                    ) * 100
+
                     with st.expander(
-                        f"Evidence {i} — Page {result['page']}"
+                        f"📄 Evidence {i}  ·  Page {result['page']}  ·  "
+                        f"Relevance {relevance_pct:.0f}%",
+                        expanded=(i == 1),
                     ):
 
-                        st.write(
-                            f"**Source:** {result['source']}"
+                        st.markdown(
+                            f"**Source:** `{result['source']}`"
                         )
 
-                        st.write(
-                            f"**Relevance Score:** "
-                            f"{result['score']:.3f}"
+                        st.progress(
+                            int(relevance_pct),
+                            text=f"Evidence relevance: {relevance_pct:.0f}%"
                         )
+
+                        st.markdown("**Supporting SOP content**")
+
+                        evidence_text = str(result["text"]).replace(
+                            "\n",
+                            "\n\n",
+                        )
+
+                        st.markdown(
+                            f"> {evidence_text.replace(chr(10), chr(10) + '> ')}"
+                        )
+
 
                         st.write(result["text"])
 
