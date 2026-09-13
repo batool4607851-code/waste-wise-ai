@@ -6,3 +6,6 @@ requests
 pypdf
 faiss-cpu
 numpy
+
+sentence-transformers
+groq
