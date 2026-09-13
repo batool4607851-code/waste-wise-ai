@@ -16,6 +16,26 @@ st.set_page_config(
     page_icon="♻️",
     layout="wide",
 )
+st.markdown(
+    """
+    <style>
+    /* SOP evidence typography */
+    .stMarkdown p {
+        font-size: 0.95rem;
+    }
+
+    div[data-testid="stExpander"] summary p {
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+
+    div[data-testid="stExpander"] .stMarkdown h3 {
+        font-size: 1.05rem;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 st.title("♻️ WasteWise AI")
 st.subheader("Turn factory data into actionable waste intelligence.")
