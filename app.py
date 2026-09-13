@@ -34,7 +34,8 @@ page = st.sidebar.radio(
         "KPI Dashboard",
         "Loss Analysis",
         "Investigation",
-        "Anomaly Detection",
+               "Anomaly Detection",
+        "SOP / RAG",
     ],
 )
 
