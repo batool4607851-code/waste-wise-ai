@@ -4,7 +4,7 @@
 
 > **Turn factory data into actionable waste intelligence.**
 
-WasteWise AI is a multimodal AI-powered decision-support application for food manufacturing. It combines factory spreadsheets, SOP documents, and visual evidence to help operations teams identify costly manufacturing losses, investigate potential contributing factors, and determine what to check next.
+WasteWise AI is an AI-powered decision-support application for food manufacturing. It combines factory spreadsheets, PDFs and SOP documents to help operations teams identify costly manufacturing losses, investigate potential contributing factors, and determine what to check next.
 
 
 
@@ -18,7 +18,6 @@ Food manufacturers often have useful operational information scattered across:
 - Waste and loss logs
 - Quality-control records
 - SOPs and operational manuals
-- Images of packaging or product defects
 - Employee knowledge
 
 The challenge is not simply collecting data. It is turning fragmented information into clear, evidence-based decisions.
@@ -45,8 +44,6 @@ CSV / XLSX
 Python Analytics ───────┐
                         │
 PDF / SOP ──► RAG ──────┤
-                        ▼
-Images ───► Vision ──► Grok
                         │
                         ▼
               Evidence-Based Insight
@@ -79,7 +76,6 @@ The dashboard can analyze:
 - Total production
 - Total loss/waste
 - Loss rate
-- Estimated loss cost
 - Loss by product
 - Loss by production line
 - Loss by shift
@@ -112,21 +108,9 @@ AI Answer
 
 Document-based answers include source information where available.
 
-### 4. Multimodal Visual Evidence
+### 4. AI Analyst
 
-Users can upload images of:
-
-- Packaging defects
-- Product defects
-- Waste
-- QC observations
-- Other relevant manufacturing evidence
-
-The vision component describes observable evidence separately from possible causes.
-
-### 5. AI Analyst
-
-Grok combines calculated analytics, document evidence, and visual evidence to explain findings in natural language.
+Groq combines calculated analytics, document evidence, and visual evidence to explain findings in natural language.
 
 The AI can help answer questions such as:
 
@@ -136,9 +120,8 @@ The AI can help answer questions such as:
 
 > What does the SOP recommend?
 
-> Could this image be related to the elevated loss on Line 2?
 
-### 6. Investigation Recommendations
+### 5. Investigation Recommendations
 
 WasteWise does not simply identify a problem.
 
@@ -152,9 +135,6 @@ Line 2 has an unusually high loss rate.
 
 Data Evidence:
 Line 2 shows higher packaging losses than other lines.
-
-Visual Evidence:
-The uploaded image appears to show a possible packaging seal defect.
 
 SOP Evidence:
 The relevant SOP contains procedures for checking packaging equipment.
@@ -223,7 +203,6 @@ The application distinguishes:
 | Type | Example |
 |---|---|
 | **FACT** | Line 2 has a 7.12% loss rate. |
-| **OBSERVATION** | The image appears to show an incomplete seal. |
 | **INFERENCE** | The findings may be related. |
 | **RECOMMENDATION** | Review Line 2 calibration records. |
 
@@ -232,9 +211,7 @@ WasteWise must not present a hypothesis as a confirmed root cause.
 It must not:
 
 - invent measurements
-- invent costs
 - invent SOP requirements
-- claim an image proves a machine failure
 - make autonomous product-disposal decisions
 - make autonomous quality-approval decisions
 
@@ -265,8 +242,7 @@ When evidence is insufficient, the system should communicate that clearly.
 
 ### AI
 
-- xAI / Grok
-- Multimodal image analysis
+- xAI / Groq
 - Natural-language reasoning
 
 ### Development
@@ -292,45 +268,27 @@ The architecture intentionally avoids unnecessary infrastructure so that the cor
                     └────────┬─────────┘
                              │
               ┌──────────────┼──────────────┐
-              │              │              │
-              ▼              ▼              ▼
-          CSV/XLSX          PDF           Image
-              │              │              │
-              ▼              ▼              ▼
-        Python/Pandas       RAG       Grok Vision
-              │              │              │
+              │                             │
+              ▼                             ▼
+          CSV/XLSX                         PDF
+              │                             │
+              ▼                             ▼
+        Python/Pandas                      RAG
+              │                             │
               └──────────────┼──────────────┘
                              ▼
                       Grok Reasoning
                              │
                              ▼
-                 WasteWise AI Insight
+                    WasteWise AI Insight
                              │
                              ▼
-                 Human Investigation
+                   Human Investigation
 ```
 
 ---
 
-## Project Structure
-
-```text
-waste-wise-ai/
-│
-├── app.py
-├── requirements.txt
-├── README.md
-├── .gitignore
-├── .env.example
-│
-├── src/
-│   └── __init__.py
-│
-└── tests/
-    └── __init__.py
-```
-
-As development progresses, additional analytics, data-loading, RAG, AI, and vision modules will be added to `src/`.
+As development progresses, additional analytics, data-loading, RAG, AI modules will be added to `src/`.
 
 ---
 
@@ -395,11 +353,9 @@ The intended demonstration flow is:
         ↓
 5. Retrieve relevant SOP evidence
         ↓
-6. Upload visual evidence
+6. Combine data + SOP
         ↓
-7. Combine data + SOP + image evidence
-        ↓
-8. Generate an investigation finding
+7. Generate an investigation finding
 ```
 
 A synthetic demonstration dataset may be used to demonstrate the application.
@@ -419,17 +375,13 @@ The hackathon MVP focuses on:
 - PDF/SOP upload
 - RAG
 - Natural-language AI analysis
-- Image analysis
 - Cross-source reasoning
 - Investigation recommendations
 - Basic anomaly detection
-- Estimated financial impact
 
 The development principle is:
 
 > **WORKING > SIMPLE > RELIABLE > IMPRESSIVE > COMPLEX**
-
-
 
 ---
 
@@ -452,35 +404,6 @@ These may be considered future capabilities rather than hackathon MVP requiremen
 
 
 
----
-
-## Business Impact
-
-WasteWise can estimate the financial significance of manufacturing losses.
-
-For example:
-
-```text
-Monthly Loss
-×
-Estimated Material Cost
-=
-Estimated Loss Cost
-```
-
-The application may also model scenarios such as:
-
-```text
-Current estimated loss cost
-        ↓
-Potential reduction scenario
-        ↓
-Estimated potential saving
-```
-
-Scenario-based savings must be clearly labelled as estimates and must not be presented as proven savings without real operational evidence.
-
----
 
 ## Future Roadmap
 
