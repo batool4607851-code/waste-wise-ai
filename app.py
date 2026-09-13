@@ -318,7 +318,7 @@ elif page in [
 
             st.header("📊 Waste KPI Dashboard")
 
-            kpis = calculate_waste_kpis(normalized_df)
+            kpis = calculate_waste_kpis(normalized_df, "production_quantity", "loss_quantity")
 
             st.caption(
                 "A quick view of overall production performance and material loss."
