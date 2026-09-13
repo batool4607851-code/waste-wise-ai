@@ -47,6 +47,27 @@ st.divider()
 # DATA & MAPPING
 # =========================================================
 
+
+def format_sop_evidence(text):
+    """Format raw SOP extraction into readable evidence."""
+    import re
+
+    text = str(text).replace("\r", " ").replace("\n", " ")
+    text = re.sub(r"\s+", " ", text).strip()
+
+    # Separate numbered SOP sections.
+    text = re.sub(r"\s+(?=\d+\.\s+[A-Z])", "\n\n", text)
+
+    # Format numbered section headings.
+    text = re.sub(
+        r"(?m)^(\d+\.\s+[A-Z][^\n]+)",
+        r"### \1",
+        text,
+    )
+
+    return re.sub(r"\n{3,}", "\n\n", text).strip()
+
+
 if page == "Data & Mapping":
 
     uploaded_file = st.file_uploader(
@@ -273,11 +294,7 @@ elif page in [
 
             st.header("📊 Waste KPI Dashboard")
 
-            kpis = calculate_waste_kpis(
-                normalized_df,
-                "production_quantity",
-                "loss_quantity",
-            )
+            kpis = calculate_waste_kpis(normalized_df)
 
             st.caption(
                 "A quick view of overall production performance and material loss."
@@ -288,19 +305,19 @@ elif page in [
             with kpi1:
                 st.metric(
                     "Total Production",
-                    f"{kpis['total_production']:,.0f}",
+                    f"{kpis['total_production']:,.0f}"
                 )
 
             with kpi2:
                 st.metric(
                     "Total Loss",
-                    f"{kpis['total_waste']:,.0f}",
+                    f"{kpis['total_loss']:,.0f}"
                 )
 
             with kpi3:
                 st.metric(
                     "Loss Rate",
-                    f"{kpis['waste_rate']:.2f}%",
+                    f"{kpis['waste_rate']:.2f}%"
                 )
 
             st.divider()
