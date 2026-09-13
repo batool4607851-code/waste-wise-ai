@@ -657,7 +657,7 @@ elif page == "SOP / RAG":
 
     if sop_file:
 
-        sop_path = "/content/waste-wise-ai/uploaded_sop.pdf"
+        sop_path = "uploaded_sop.pdf"
 
         with open(sop_path, "wb") as f:
             f.write(sop_file.getbuffer())
