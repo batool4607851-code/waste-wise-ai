@@ -279,21 +279,36 @@ elif page in [
                 "loss_quantity",
             )
 
+            st.caption(
+                "A quick view of overall production performance and material loss."
+            )
+
             kpi1, kpi2, kpi3 = st.columns(3)
 
-            kpi1.metric(
-                "Total Production",
-                f"{kpis['total_production']:,.0f}",
-            )
+            with kpi1:
+                st.metric(
+                    "Total Production",
+                    f"{kpis['total_production']:,.0f}",
+                )
 
-            kpi2.metric(
-                "Total Loss",
-                f"{kpis['total_waste']:,.0f}",
-            )
+            with kpi2:
+                st.metric(
+                    "Total Loss",
+                    f"{kpis['total_waste']:,.0f}",
+                )
 
-            kpi3.metric(
-                "Loss Rate",
-                f"{kpis['waste_rate']:.2f}%",
+            with kpi3:
+                st.metric(
+                    "Loss Rate",
+                    f"{kpis['waste_rate']:.2f}%",
+                )
+
+            st.divider()
+
+            st.subheader("🎯 What to investigate next")
+            st.write(
+                "Use Loss Analysis to identify the products, lines, shifts, "
+                "processes, and loss reasons contributing most to the total loss."
             )
 
 
