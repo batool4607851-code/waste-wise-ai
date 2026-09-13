@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-
+from src.rag import build_chunks, build_vector_index, retrieve_chunks
 from src.data_loader import load_data, validate_data
 from src.analytics import (
     calculate_waste_kpis,
