@@ -53,6 +53,10 @@ def format_sop_evidence(text):
     import re
 
     text = str(text).replace("\r", " ").replace("\n", " ")
+
+    # Remove PDF-to-Markdown link artifacts such as [svg](...)
+    text = re.sub(r"\[svg\]\([^)]*\)", "", text)
+
     text = re.sub(r"\s+", " ", text).strip()
 
     # Separate numbered SOP sections.
@@ -775,8 +779,6 @@ elif page == "SOP / RAG":
                             f"> {evidence_text.replace(chr(10), chr(10) + '> ')}"
                         )
 
-
-                        st.write(result["text"])
 
         except Exception as e:
 
