@@ -223,6 +223,245 @@ if uploaded_file:
             st.divider()
 
             # -----------------------------------------------------
+            # LOSS BY PRODUCT
+            # -----------------------------------------------------
+
+            if "product" in normalized_df.columns:
+
+                st.subheader("Loss by Product")
+
+                product_result = (
+                    normalized_df
+                    .groupby("product", dropna=False)["loss_quantity"]
+                    .sum()
+                    .reset_index()
+                    .sort_values(
+                        "loss_quantity",
+                        ascending=False
+                    )
+                )
+
+                st.bar_chart(
+                    product_result.set_index("product")["loss_quantity"]
+                )
+
+                st.dataframe(
+                    product_result.reset_index(drop=True),
+                    use_container_width=True,
+                    hide_index=True,
+                )
+
+            st.divider()
+
+            # -----------------------------------------------------
+            # LOSS BY PRODUCTION LINE
+            # -----------------------------------------------------
+
+            if "production_line" in normalized_df.columns:
+
+                st.subheader("Loss by Production Line")
+
+                line_result = (
+                    normalized_df
+                    .groupby(
+                        "production_line",
+                        dropna=False
+                    )["loss_quantity"]
+                    .sum()
+                    .reset_index()
+                    .sort_values(
+                        "loss_quantity",
+                        ascending=False
+                    )
+                )
+
+                st.bar_chart(
+                    line_result.set_index(
+                        "production_line"
+                    )["loss_quantity"]
+                )
+
+                st.dataframe(
+                    line_result.reset_index(drop=True),
+                    use_container_width=True,
+                    hide_index=True,
+                )
+
+            st.divider()
+
+            # -----------------------------------------------------
+            # LOSS BY SHIFT
+            # -----------------------------------------------------
+
+            if "shift" in normalized_df.columns:
+
+                st.subheader("Loss by Shift")
+
+                shift_result = (
+                    normalized_df
+                    .groupby(
+                        "shift",
+                        dropna=False
+                    )["loss_quantity"]
+                    .sum()
+                    .reset_index()
+                    .sort_values(
+                        "loss_quantity",
+                        ascending=False
+                    )
+                )
+
+                st.bar_chart(
+                    shift_result.set_index(
+                        "shift"
+                    )["loss_quantity"]
+                )
+
+                st.dataframe(
+                    shift_result.reset_index(drop=True),
+                    use_container_width=True,
+                    hide_index=True,
+                )
+
+            st.divider()
+
+            # -----------------------------------------------------
+            # LOSS BY PROCESS
+            # -----------------------------------------------------
+
+            if "process" in normalized_df.columns:
+
+                st.subheader("Loss by Process")
+
+                process_result = (
+                    normalized_df
+                    .groupby(
+                        "process",
+                        dropna=False
+                    )["loss_quantity"]
+                    .sum()
+                    .reset_index()
+                    .sort_values(
+                        "loss_quantity",
+                        ascending=False
+                    )
+                )
+
+                st.bar_chart(
+                    process_result.set_index(
+                        "process"
+                    )["loss_quantity"]
+                )
+
+                st.dataframe(
+                    process_result.reset_index(drop=True),
+                    use_container_width=True,
+                    hide_index=True,
+                )
+
+            st.divider()
+
+            # -----------------------------------------------------
+            # INVESTIGATION PRIORITIES
+            # -----------------------------------------------------
+
+            if "loss_quantity" in normalized_df.columns:
+
+                st.subheader("Investigation Priorities")
+
+                priority_columns = [
+                    column
+                    for column in [
+                        "product",
+                        "production_line",
+                        "shift",
+                        "process",
+                        "event_reason",
+                    ]
+                    if column in normalized_df.columns
+                ]
+
+                if priority_columns:
+
+                    priority_result = (
+                        normalized_df
+                        .groupby(
+                            priority_columns,
+                            dropna=False
+                        )["loss_quantity"]
+                        .sum()
+                        .reset_index()
+                        .sort_values(
+                            "loss_quantity",
+                            ascending=False
+                        )
+                        .head(10)
+                    )
+
+                    priority_result.insert(
+                        0,
+                        "Priority Rank",
+                        range(1, len(priority_result) + 1),
+                    )
+
+                    st.dataframe(
+                        priority_result.reset_index(drop=True),
+                        use_container_width=True,
+                        hide_index=True,
+                    )
+
+                else:
+
+                    st.info(
+                        "Additional fields are required to generate investigation priorities."
+                    )
+
+            st.divider()
+
+            # -----------------------------------------------------
+            # HIGH-LOSS ANOMALY DETECTION
+            # -----------------------------------------------------
+
+            st.subheader("High-Loss Anomaly Detection")
+
+            if "loss_quantity" in normalized_df.columns:
+
+                loss_values = normalized_df["loss_quantity"]
+
+                average_loss = loss_values.mean()
+                std_loss = loss_values.std()
+
+                anomaly_threshold = average_loss + (2 * std_loss)
+
+                anomalies = normalized_df[
+                    normalized_df["loss_quantity"] > anomaly_threshold
+                ].copy()
+
+                st.write(
+                    f"Anomaly threshold: {anomaly_threshold:,.2f}"
+                )
+
+                if not anomalies.empty:
+
+                    st.warning(
+                        f"{len(anomalies)} unusually high-loss record(s) detected."
+                    )
+
+                    st.dataframe(
+                        anomalies.reset_index(drop=True),
+                        use_container_width=True,
+                        hide_index=True,
+                    )
+
+                else:
+
+                    st.success(
+                        "No unusually high-loss records detected."
+                    )
+
+            st.divider()
+
+            # -----------------------------------------------------
             # LOSS RATE ANALYSIS
             # -----------------------------------------------------
 
@@ -324,3 +563,4 @@ else:
     st.info(
         "Upload a CSV, XLSX, XLS, or PDF file to begin analysis."
     )
+
