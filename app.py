@@ -1,4 +1,3 @@
-
 import streamlit as st
 
 from src.data_loader import load_data, validate_data
@@ -6,6 +5,7 @@ from src.analytics import (
     calculate_waste_kpis,
     calculate_group_waste_rates,
     calculate_top_waste_reasons,
+    loss_trend,
 )
 
 
@@ -29,13 +29,10 @@ uploaded_file = st.file_uploader(
 if uploaded_file:
 
     try:
-        # Every supported file is converted to a DataFrame
         df = load_data(uploaded_file)
 
         if not hasattr(df, "columns"):
-            raise ValueError(
-                "The file could not be converted into a data table."
-            )
+            raise ValueError("The file could not be converted into a data table.")
 
         validation = validate_data(df)
 
@@ -43,49 +40,167 @@ if uploaded_file:
 
         st.subheader("Data Preview")
         st.dataframe(
-            df.head(10),
+            df.head(10).reset_index(drop=True),
             use_container_width=True,
+            hide_index=True,
         )
 
-        st.subheader("Dataset Information")
-
-        col1, col2, col3, col4 = st.columns(4)
-
-        col1.metric("Rows", validation["rows"])
-        col2.metric("Columns", len(validation["columns"]))
-        col3.metric("Missing Values", validation["missing_values"])
-        col4.metric("Duplicate Rows", validation["duplicate_rows"])
+        # ---------------------------------------------------------
+        # COLUMN MAPPING
+        # ---------------------------------------------------------
 
         st.divider()
+        st.subheader("Column Mapping")
 
-        numeric_columns = df.select_dtypes(
-            include="number"
-        ).columns.tolist()
+        st.write(
+            "WasteWise maps your factory's column names to standard fields "
+            "used by the analytics engine."
+        )
 
-        if len(numeric_columns) >= 2:
+        mapping = {}
+
+        canonical_fields = [
+            "date",
+            "product",
+            "production_line",
+            "shift",
+            "production_quantity",
+            "event_reason",
+            "loss_quantity",
+        ]
+
+        for field in canonical_fields:
+
+            current_match = None
+
+            for column in df.columns:
+                normalized = column.lower().replace(" ", "_")
+
+                if field == normalized:
+                    current_match = column
+                    break
+
+            options = ["Not available"] + list(df.columns)
+
+            default_index = (
+                options.index(current_match)
+                if current_match in options
+                else 0
+            )
+
+            mapping[field] = st.selectbox(
+                field.replace("_", " ").title(),
+                options,
+                index=default_index,
+                key=f"mapping_{field}",
+            )
+
+        if st.button("Confirm Mapping & Continue", type="primary"):
+
+            rename_map = {
+                selected: canonical
+                for canonical, selected in mapping.items()
+                if selected != "Not available"
+            }
+
+            normalized_df = df.rename(columns=rename_map).copy()
+
+            required_fields = [
+                "production_quantity",
+                "loss_quantity",
+            ]
+
+            missing_required = [
+                field
+                for field in required_fields
+                if field not in normalized_df.columns
+            ]
+
+            if missing_required:
+                st.error(
+                    "Missing required fields: "
+                    + ", ".join(missing_required)
+                )
+                st.stop()
+
+            for numeric_field in [
+                "production_quantity",
+                "loss_quantity",
+            ]:
+                normalized_df[numeric_field] = (
+                    normalized_df[numeric_field]
+                    .astype(str)
+                    .str.replace(",", "", regex=False)
+                )
+
+                normalized_df[numeric_field] = (
+                    __import__("pandas")
+                    .to_numeric(
+                        normalized_df[numeric_field],
+                        errors="coerce",
+                    )
+                    .fillna(0)
+                )
+
+            st.session_state["normalized_df"] = normalized_df
+            st.session_state["mapping_confirmed"] = True
+
+            st.success("Column mapping confirmed and data normalized.")
+
+        # ---------------------------------------------------------
+        # ANALYSIS ONLY AFTER MAPPING
+        # ---------------------------------------------------------
+
+        if st.session_state.get("mapping_confirmed", False):
+
+            normalized_df = st.session_state["normalized_df"]
+
+            st.subheader("Normalized WasteWise Data")
+
+            st.dataframe(
+                normalized_df.head(10).reset_index(drop=True),
+                use_container_width=True,
+                hide_index=True,
+            )
+
+            st.subheader("Available Fields")
+            st.write(", ".join(normalized_df.columns.tolist()))
+
+            st.divider()
+
+            # -----------------------------------------------------
+            # DATASET INFORMATION
+            # -----------------------------------------------------
+
+            st.subheader("Dataset Information")
+
+            col1, col2, col3, col4 = st.columns(4)
+
+            normalized_validation = validate_data(normalized_df)
+
+            col1.metric("Rows", normalized_validation["rows"])
+            col2.metric("Columns", normalized_validation["columns"])
+            col3.metric(
+                "Missing Values",
+                normalized_validation["missing_values"],
+            )
+            col4.metric(
+                "Duplicate Rows",
+                normalized_validation["duplicate_rows"],
+            )
+
+            st.divider()
+
+            # -----------------------------------------------------
+            # KPI DASHBOARD
+            # -----------------------------------------------------
 
             st.subheader("Waste KPI Dashboard")
 
-            production_column = st.selectbox(
-                "Production column",
-                numeric_columns,
-            )
-
-            waste_options = [
-                column
-                for column in numeric_columns
-                if column != production_column
-            ]
-
-            waste_column = st.selectbox(
-                "Waste column",
-                waste_options,
-            )
-
             kpis = calculate_waste_kpis(
-                df,
-                production_column,
-                waste_column,
+                normalized_df,
+                "production_quantity",
+                "loss_quantity",
             )
 
             kpi1, kpi2, kpi3 = st.columns(3)
@@ -96,25 +211,29 @@ if uploaded_file:
             )
 
             kpi2.metric(
-                "Total Waste",
+                "Total Loss",
                 f"{kpis['total_waste']:,.0f}",
             )
 
             kpi3.metric(
-                "Waste Rate",
+                "Loss Rate",
                 f"{kpis['waste_rate']:.2f}%",
             )
 
             st.divider()
 
-            st.subheader("Waste Rate Analysis")
+            # -----------------------------------------------------
+            # LOSS RATE ANALYSIS
+            # -----------------------------------------------------
+
+            st.subheader("Loss Rate Analysis")
 
             group_options = [
                 column
-                for column in df.columns
+                for column in normalized_df.columns
                 if column not in [
-                    production_column,
-                    waste_column,
+                    "production_quantity",
+                    "loss_quantity",
                 ]
             ]
 
@@ -128,46 +247,73 @@ if uploaded_file:
                 if st.button("Analyze Waste Rates"):
 
                     result = calculate_group_waste_rates(
-                        df,
+                        normalized_df,
                         group_column=group_column,
-                        production_column=production_column,
-                        waste_column=waste_column,
+                        production_column="production_quantity",
+                        waste_column="loss_quantity",
                     )
 
                     st.dataframe(
-                        result,
+                        result.reset_index(drop=True),
                         use_container_width=True,
+                        hide_index=True,
                     )
 
             st.divider()
 
-            reason_candidates = [
-                column
-                for column in df.columns
-                if "reason" in column.lower()
-            ]
+            # -----------------------------------------------------
+            # TOP LOSS REASONS
+            # -----------------------------------------------------
 
-            if reason_candidates:
+            if "event_reason" in normalized_df.columns:
 
-                st.subheader("Top Waste Reasons")
+                st.subheader("Top Loss Reasons")
 
                 reason_result = calculate_top_waste_reasons(
-                    df,
-                    waste_reason_column=reason_candidates[0],
-                    waste_column=waste_column,
+                    normalized_df,
+                    "event_reason",
+                    "loss_quantity",
                 )
 
                 st.dataframe(
-                    reason_result,
+                    reason_result.reset_index(drop=True),
                     use_container_width=True,
+                    hide_index=True,
                 )
 
-        else:
+            st.divider()
 
-            st.warning(
-                "The uploaded file does not contain at least "
-                "two numeric columns required for waste analysis."
-            )
+            # -----------------------------------------------------
+            # LOSS TREND
+            # -----------------------------------------------------
+
+            st.subheader("Loss Trend")
+
+            if "date" in normalized_df.columns:
+
+                trend_result = loss_trend(
+                    normalized_df,
+                    date_column="date",
+                    loss_column="loss_quantity",
+                )
+
+                if not trend_result.empty:
+
+                    st.line_chart(
+                        trend_result.set_index("date")["loss_quantity"]
+                    )
+
+                else:
+
+                    st.info(
+                        "A usable date field is required to display the loss trend."
+                    )
+
+            else:
+
+                st.info(
+                    "A date field is required to display the loss trend."
+                )
 
     except Exception as e:
 
