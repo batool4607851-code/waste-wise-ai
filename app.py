@@ -752,10 +752,7 @@ elif page == "SOP / RAG":
 
                         st.markdown("**Supporting SOP content**")
 
-                        evidence_text = str(result["text"]).replace(
-                            "\n",
-                            "\n\n",
-                        )
+                        evidence_text = format_sop_evidence(result["text"])
 
                         st.markdown(
                             f"> {evidence_text.replace(chr(10), chr(10) + '> ')}"
