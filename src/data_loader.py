@@ -1,4 +1,3 @@
-
 import pandas as pd
 from pypdf import PdfReader
 
@@ -7,12 +6,10 @@ from src.data_mapper import normalize_name
 
 def clean_columns(df):
     df = df.copy()
-
     df.columns = [
         normalize_name(column)
         for column in df.columns
     ]
-
     return df
 
 
@@ -26,6 +23,7 @@ def load_data(file):
         df = pd.read_excel(file)
 
     elif filename.endswith(".pdf"):
+
         reader = PdfReader(file)
 
         text = []
@@ -52,6 +50,7 @@ def load_data(file):
         rows = []
 
         for line in lines:
+
             parts = line.split()
 
             if len(parts) < 8:
@@ -60,6 +59,7 @@ def load_data(file):
             try:
                 production = float(parts[-2])
                 waste = float(parts[-1])
+
             except ValueError:
                 continue
 
@@ -70,18 +70,16 @@ def load_data(file):
             process = parts[4]
             reason = " ".join(parts[5:-2])
 
-            rows.append(
-                {
-                    "date": date,
-                    "product": product,
-                    "line": line_name,
-                    "shift": shift,
-                    "process": process,
-                    "waste_reason": reason,
-                    "production_kg": production,
-                    "waste_kg": waste,
-                }
-            )
+            rows.append({
+                "date": date,
+                "product": product,
+                "line": line_name,
+                "shift": shift,
+                "process": process,
+                "waste_reason": reason,
+                "production_kg": production,
+                "waste_kg": waste,
+            })
 
         if not rows:
             raise ValueError(
@@ -113,5 +111,5 @@ def validate_data(df):
         "duplicate_rows": int(
             df.duplicated().sum()
         ),
-        "columns": list(df.columns),
+        "column_names": list(df.columns),
     }
