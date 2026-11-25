@@ -2,7 +2,8 @@
 import pandas as pd
 
 from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.neural_network import MLPClassifier
+from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import (
     accuracy_score,
@@ -108,10 +109,8 @@ def build_model():
     ])
 
     numeric_pipeline = Pipeline([
-        (
-            "imputer",
-            SimpleImputer(strategy="median")
-        )
+        ("imputer", SimpleImputer(strategy="median")),
+        ("scaler", StandardScaler())
     ])
 
     preprocessor = ColumnTransformer([
@@ -129,12 +128,13 @@ def build_model():
 
     model = Pipeline([
         ("preprocessor", preprocessor),
-        (
-            "classifier",
-            RandomForestClassifier(
-                n_estimators=300,
-                class_weight="balanced",
-                min_samples_leaf=2,
+        ("classifier",
+            MLPClassifier(
+                hidden_layer_sizes=(32,),
+                activation="relu",
+                solver="adam",
+                learning_rate_init=0.001,
+                max_iter=1000,
                 random_state=42
             )
         )
