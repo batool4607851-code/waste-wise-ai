@@ -55,7 +55,8 @@ page = st.sidebar.radio(
         "KPI Dashboard",
         "Loss Analysis",
         "Investigation",
-               "Anomaly Detection",
+        "Anomaly Detection",
+        "Predictive Waste Intelligence",
         "SOP / RAG",
     ],
 )
@@ -141,6 +142,7 @@ if page == "Data & Mapping":
                 "production_line",
                 "shift",
                 "production_quantity",
+                "seal_temperature",
                 "event_reason",
                 "loss_quantity",
             ]
@@ -149,14 +151,37 @@ if page == "Data & Mapping":
 
                 current_match = None
 
-                for column in df.columns:
+                field_aliases = {
+                    "date": ["date"],
+                    "product": ["product"],
+                    "production_line": ["production_line", "line"],
+                    "shift": ["shift"],
+                    "production_quantity": [
+                        "production_quantity",
+                        "production_kg"
+                    ],
+                    "seal_temperature": [
+                        "seal_temperature",
+                        "seal_temp_c"
+                    ],
+                    "event_reason": [
+                        "event_reason",
+                        "waste_reason"
+                    ],
+                    "loss_quantity": [
+                        "loss_quantity",
+                        "waste_kg"
+                    ],
+                }
 
+                for column in df.columns:
+                
                     normalized = (
                         column.lower()
                         .replace(" ", "_")
                     )
-
-                    if field == normalized:
+                
+                    if normalized in field_aliases.get(field, []):
                         current_match = column
                         break
 
@@ -226,12 +251,30 @@ if page == "Data & Mapping":
                             errors="coerce",
                         ).fillna(0)
 
-                    st.session_state["normalized_df"] = normalized_df
-                    st.session_state["mapping_confirmed"] = True
-
+                        # Clear the previous predictive model
+                        st.session_state.pop(
+                            "waste_prediction_model",
+                            None
+                        )
+                        
+                        st.session_state.pop(
+                            "waste_prediction_metrics",
+                            None
+                        )
+                        
+                        # Store the newly uploaded dataset in memory
+                        st.session_state["normalized_df"] = normalized_df
+                        st.session_state["mapping_confirmed"] = True
                     st.success(
                         "Column mapping confirmed and data normalized."
                     )
+                    
+                    if "seal_temperature" in normalized_df.columns:
+                    
+                        normalized_df["seal_temperature"] = pd.to_numeric(
+                            normalized_df["seal_temperature"],
+                            errors="coerce"
+                        )
 
             if st.session_state.get(
                 "mapping_confirmed",
@@ -297,6 +340,7 @@ elif page in [
     "Loss Analysis",
     "Investigation",
     "Anomaly Detection",
+    "Predictive Waste Intelligence",
 ]:
 
     normalized_df = st.session_state.get("normalized_df")
@@ -675,6 +719,341 @@ elif page in [
                 st.success(
                     "No unusually high-loss records detected."
                 )
+
+        # =====================================================
+        # PREDICTIVE WASTE INTELLIGENCE
+        # =====================================================
+
+        elif page == "Predictive Waste Intelligence":
+
+            from src.predictive_model import (
+                train_model,
+                predict_batch,
+                CATEGORICAL_FEATURES,
+                NUMERIC_FEATURES,
+            )
+
+            st.header("🔮 Predictive Waste Intelligence")
+
+            st.write(
+                "Train a predictive model using your uploaded "
+                "historical production data and assess the waste "
+                "risk of upcoming batches."
+            )
+
+            st.info(
+                "The model is trained using the dataset uploaded "
+                "in Data & Mapping. Your data and trained model "
+                "remain in the current application session."
+            )
+
+            required_columns = [
+                "production_quantity",
+                "loss_quantity",
+                "seal_temperature",
+                "production_line",
+                "shift",
+                "product",
+            ]
+
+            missing_columns = [
+                col for col in required_columns
+                if col not in normalized_df.columns
+            ]
+
+            if missing_columns:
+
+                st.error(
+                    "Your dataset is missing the following "
+                    "mapped fields: "
+                    + ", ".join(missing_columns)
+                )
+
+                st.write(
+                    "Return to Data & Mapping and map all "
+                    "required predictive columns."
+                )
+
+            else:
+
+                st.subheader("1. Train Predictive Model")
+
+                st.caption(
+                    "Waste of 200 kg or more is classified "
+                    "as high risk."
+                )
+
+                if st.button(
+                    "Train Model Using Uploaded Data",
+                    type="primary",
+                    key="train_waste_model"
+                ):
+
+                    try:
+
+                        with st.spinner(
+                            "Training and evaluating model..."
+                        ):
+
+                            model, metrics = train_model(
+                                normalized_df
+                            )
+
+                            st.session_state[
+                                "waste_prediction_model"
+                            ] = model
+
+                            st.session_state[
+                                "waste_prediction_metrics"
+                            ] = metrics
+
+                        st.success(
+                            "Predictive model trained successfully."
+                        )
+
+                    except Exception as e:
+
+                        st.session_state.pop(
+                            "waste_prediction_model",
+                            None
+                        )
+
+                        st.session_state.pop(
+                            "waste_prediction_metrics",
+                            None
+                        )
+
+                        st.error(
+                            f"Model training failed: {e}"
+                        )
+
+                # Display model evaluation
+                metrics = st.session_state.get(
+                    "waste_prediction_metrics"
+                )
+
+                model = st.session_state.get(
+                    "waste_prediction_model"
+                )
+
+                if metrics is not None and model is not None:
+
+                    st.divider()
+
+                    st.subheader("2. Model Performance")
+
+                    st.caption(
+                        "Metrics below are based on "
+                        "stratified cross-validation."
+                    )
+
+                    c1, c2, c3, c4 = st.columns(4)
+
+                    c1.metric(
+                        "Accuracy",
+                        f"{metrics['accuracy'] * 100:.1f}%"
+                    )
+
+                    c2.metric(
+                        "High-Risk Recall",
+                        f"{metrics['recall'] * 100:.1f}%"
+                    )
+
+                    c3.metric(
+                        "Precision",
+                        f"{metrics['precision'] * 100:.1f}%"
+                    )
+
+                    c4.metric(
+                        "F1 Score",
+                        f"{metrics['f1'] * 100:.1f}%"
+                    )
+
+                    st.write(
+                        f"Training records: {metrics['records']}"
+                    )
+
+                    st.write(
+                        f"High-risk records: "
+                        f"{metrics['high_risk_records']}"
+                    )
+
+                    st.write(
+                        f"Low-risk records: "
+                        f"{metrics['low_risk_records']}"
+                    )
+
+                    st.write(
+                        f"Balanced accuracy: "
+                        f"{metrics['balanced_accuracy'] * 100:.1f}%"
+                    )
+
+                    st.subheader("Confusion Matrix")
+
+                    confusion = pd.DataFrame(
+                        metrics["confusion_matrix"],
+                        index=[
+                            "Actual Low Risk",
+                            "Actual High Risk"
+                        ],
+                        columns=[
+                            "Predicted Low Risk",
+                            "Predicted High Risk"
+                        ]
+                    )
+
+                    st.dataframe(
+                        confusion,
+                        use_container_width=True
+                    )
+
+                    st.subheader("Detailed Classification Report")
+
+                    st.code(
+                        metrics["classification_report"]
+                    )
+
+                    st.divider()
+
+                    # -----------------------------------------
+                    # NEW BATCH PREDICTION
+                    # -----------------------------------------
+
+                    st.subheader("3. Predict a New Production Batch")
+
+                    st.write(
+                        "Enter the production conditions "
+                        "of the upcoming batch."
+                    )
+
+                    with st.form(
+                        "waste_batch_prediction_form"
+                    ):
+
+                        col1, col2 = st.columns(2)
+
+                        with col1:
+
+                            line_options = sorted(
+                                normalized_df[
+                                    "production_line"
+                                ].dropna().astype(str).unique().tolist()
+                            )
+
+                            shift_options = sorted(
+                                normalized_df[
+                                    "shift"
+                                ].dropna().astype(str).unique().tolist()
+                            )
+
+                            product_options = sorted(
+                                normalized_df[
+                                    "product"
+                                ].dropna().astype(str).unique().tolist()
+                            )
+
+                            line = st.selectbox(
+                                "Production Line",
+                                line_options
+                            )
+
+                            shift = st.selectbox(
+                                "Shift",
+                                shift_options
+                            )
+
+                            product = st.selectbox(
+                                "Product",
+                                product_options
+                            )
+
+                        with col2:
+
+                            production = st.number_input(
+                                "Production Quantity (kg)",
+                                min_value=0.01,
+                                value=5000.0,
+                                step=100.0
+                            )
+
+                            temperature = st.number_input(
+                                "Seal Temperature (°C)",
+                                value=170.0,
+                                step=0.5
+                            )
+
+                        submitted = st.form_submit_button(
+                            "Predict Waste Risk",
+                            type="primary"
+                        )
+
+                    if submitted:
+
+                        try:
+
+                            result = predict_batch(
+                                model,
+                                line,
+                                shift,
+                                product,
+                                production,
+                                temperature
+                            )
+
+                            st.divider()
+
+                            st.subheader(
+                                "4. Prediction Result"
+                            )
+
+                            if result["prediction"] == 1:
+
+                                st.error(
+                                    "🚨 HIGH WASTE RISK"
+                                )
+
+                                st.warning(
+                                    "This batch is classified "
+                                    "as likely to generate "
+                                    "200 kg or more of waste."
+                                )
+
+                            else:
+
+                                st.success(
+                                    "✅ LOW WASTE RISK"
+                                )
+
+                                st.info(
+                                    "This batch is classified "
+                                    "as likely to generate "
+                                    "less than 200 kg of waste."
+                                )
+
+                            st.metric(
+                                "Model-estimated High-Risk Score",
+                                f"{result['risk_score']:.1f}%"
+                            )
+
+                            st.caption(
+                                "This is the model's estimated "
+                                "risk score, not a guaranteed "
+                                "probability or predicted waste "
+                                "quantity."
+                            )
+
+                        except Exception as e:
+
+                            st.error(
+                                f"Prediction failed: {e}"
+                            )
+
+                else:
+
+                    st.info(
+                        "Train the model first to activate "
+                        "new batch predictions."
+                    )
 
 
 # =========================================================
