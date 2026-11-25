@@ -9,4 +9,4 @@ numpy
 
 sentence-transformers
 groq
-scikit-learn
+scikit-learn>=1.2
