@@ -381,51 +381,6 @@ The architecture intentionally avoids unnecessary infrastructure so that the app
 
 ---
 
-## Installation
-
-Clone the repository:
-
-```bash
-git clone https://github.com/batool4607851-code/waste-wise-ai.git
-
-cd waste-wise-ai
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-Run the application:
-
-```bash
-streamlit run app.py
-```
-
-The application should open in your browser.
-
----
-
-## Environment Variables
-
-Create a local `.env` file containing the required API credentials:
-
-```text
-XAI_API_KEY=your_api_key_here
-XAI_MODEL=your_model_name
-```
-
-Use the variable names required by your configured AI integration.
-
-Never commit `.env` files or API keys to GitHub.
-
-For deployment, configure secrets through the Streamlit Community Cloud settings.
-
-The repository contains `.env.example` as a safe configuration template.
-
----
-
 ## Predictive Modelling Workflow
 
 To use Predictive Waste Intelligence:
@@ -433,17 +388,6 @@ To use Predictive Waste Intelligence:
 **Step 1 – Upload Historical Data**
 
 Navigate to Data & Mapping and upload a historical production dataset.
-
-Supported predictive fields:
-
-| Standard Field | Example Dataset Column |
-|---|---|
-| production_line | Line |
-| shift | Shift |
-| product | Product |
-| production_quantity | Production_kg |
-| seal_temperature | Seal_Temp_C |
-| loss_quantity | Waste_kg |
 
 **Step 2 – Confirm Column Mapping**
 
@@ -527,8 +471,6 @@ The intended demonstration flow is:
 ```
 
 Synthetic demonstration data may be used where actual factory records are unavailable.
-
-> **Synthetic Demo Data — Not Real Factory Data**
 
 ---
 
