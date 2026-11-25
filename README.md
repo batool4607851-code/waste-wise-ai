@@ -1,166 +1,243 @@
-# WasteWise AI
+# ♻️ WasteWise AI
+## AI-Powered Manufacturing Loss, Rework & Predictive Waste Intelligence
 
-## AI-Powered Manufacturing Loss & Rework Intelligence
+> **Turn factory data into actionable waste intelligence. Predict losses before they happen.**
 
-> **Turn factory data into actionable waste intelligence.**
+WasteWise AI is an AI-powered decision-support application designed for food manufacturing. It combines production data, waste records, operational documents and machine learning to help manufacturing teams identify losses, investigate contributing factors, anticipate high-risk production batches and make better operational decisions.
 
-WasteWise AI is an AI-powered decision-support application for food manufacturing. It combines factory spreadsheets, PDFs and SOP documents to help operations teams identify costly manufacturing losses, investigate potential contributing factors, and determine what to check next.
-
-
+The platform moves beyond traditional waste reporting by introducing predictive modelling, allowing production teams to assess potential waste risks using patterns identified in their own historical production data.
 
 ---
 
 ## The Problem
 
-Food manufacturers often have useful operational information scattered across:
+Food manufacturers often have valuable operational information scattered across:
 
 - CSV and Excel production records
 - Waste and loss logs
 - Quality-control records
-- SOPs and operational manuals
+- Standard Operating Procedures (SOPs)
+- Operational manuals
 - Employee knowledge
 
-The challenge is not simply collecting data. It is turning fragmented information into clear, evidence-based decisions.
+The challenge is not simply collecting information. It is transforming fragmented production data into meaningful, evidence-based decisions.
 
-Managers need to answer:
+Manufacturing teams need to understand:
 
-- Where are losses occurring?
-- Which products, lines, shifts, or categories are most affected?
-- What are the major loss patterns?
-- How much is the loss costing?
+- Where are production losses occurring?
+- Which products, lines and shifts are most affected?
+- What are the major waste drivers?
+- How much material is being lost?
 - What does the factory's own SOP recommend?
-- What should the team investigate next?
+- Which production batches are likely to generate significant waste?
+- What should the team investigate or address next?
 
 ---
 
 ## Our Solution
 
-WasteWise brings these sources together into one workflow:
+WasteWise brings production analytics, AI-assisted investigation and predictive modelling into one integrated workflow.
 
 ```text
-CSV / XLSX
-     │
-     ▼
-Python Analytics ───────┐
-                        │
-PDF / SOP ──► RAG ──────┤
-                        │
-                        ▼
-              Evidence-Based Insight
-                        │
-                        ▼
-              Investigation Recommendation
+       Production Data (CSV / XLSX)
+                    |
+                    v
+             Data Processing
+                    |
+          +---------+----------+
+          |                    |
+          v                    v
+    Python Analytics     Machine Learning
+          |                    |
+          |              Waste Prediction
+          |                    |
+          +---------+----------+
+                    |
+                    v
+             Waste Intelligence
+                    |
+          +---------+----------+
+          |                    |
+          v                    v
+     AI / Groq Analysis    SOP Intelligence
+          |                    |
+          +---------+----------+
+                    |
+                    v
+         Investigation & Action
 ```
 
-The application follows:
+The platform follows:
 
-> **Upload → Analyze → Ask → Investigate**
+> **Upload → Analyze → Predict → Investigate → Improve**
 
 ---
 
 ## Core Features
 
-### 1. Production & Loss Data
+### 1. Production Data & Mapping
 
-Upload factory data in:
+Upload factory production and waste data in:
 
 - CSV
 - XLSX
+- XLS
 
-WasteWise validates the uploaded data and calculates relevant manufacturing-loss metrics.
+WasteWise provides:
 
-### 2. Manufacturing Analytics
+- Data validation
+- Dataset previews
+- Automatic column mapping
+- Standardized data fields
+- Missing-value and duplicate-record checks
 
-The dashboard can analyze:
+The application allows different factory datasets to be mapped into a common analytical structure.
+
+### 2. Manufacturing KPI Dashboard
+
+Provides an overview of manufacturing performance through:
 
 - Total production
-- Total loss/waste
-- Loss rate
+- Total waste/loss
+- Overall loss rate
+- Production performance indicators
+
+### 3. Loss Analysis
+
+Identifies and analyses manufacturing losses across different operational dimensions:
+
 - Loss by product
 - Loss by production line
 - Loss by shift
 - Loss by category
 - Loss by reason
-- Trends over time
-- Basic anomalies
+- Loss trends over time
+- Comparative waste-rate analysis
 
-### 3. SOP Intelligence with RAG
+This helps identify where the greatest material losses are occurring.
 
-Upload factory SOPs and operational documents as PDFs.
+### 4. Investigation Intelligence
 
-WasteWise:
+Helps manufacturing teams identify combinations of products, production lines and shifts associated with significant losses.
+
+The module supports investigation prioritisation by highlighting operational areas that deserve further attention.
+
+### 5. Anomaly Detection
+
+Identifies unusually high-loss production records and highlights observations that may require investigation.
+
+The purpose is to help teams distinguish ordinary production variation from potentially significant loss events.
+
+### 6. Predictive Waste Intelligence
+
+WasteWise introduces machine learning to move from retrospective waste analysis towards proactive waste-risk assessment.
+
+Unlike conventional analytics, which examines losses after they occur, predictive modelling uses historical production patterns to assess the likelihood of significant waste in an upcoming batch.
+
+**How it works:**
+
+1. The user uploads historical production and waste records.
+2. WasteWise prepares the data for machine learning.
+3. A predictive model is trained using the uploaded records.
+4. The user enters the operating conditions of a new production batch.
+5. The model evaluates the batch and generates a waste-risk classification.
+
+**Initial prediction inputs:**
+
+| Input | Description |
+|---|---|
+| Production Line | Manufacturing line |
+| Shift | Production shift |
+| Product | Product being manufactured |
+| Production Quantity | Planned production in kg |
+| Seal Temperature | Operating seal temperature in °C |
+
+**Prediction objective:**
+
+The initial model uses a binary classification approach:
+
+- **Low Risk:** Predicted waste below 200 kg.
+- **High Risk:** Predicted waste of 200 kg or more.
+
+**Machine Learning Approach:**
+
+The initial implementation uses a Random Forest Classifier with:
+
+- Categorical feature encoding
+- Numerical missing-value imputation
+- Class-weighted model training
+- Stratified cross-validation
+- Confusion matrix analysis
+- Accuracy, precision, recall and F1-score evaluation
+
+High-risk recall receives particular attention because failing to identify a potentially high-waste batch can be more consequential than generating an unnecessary warning.
+
+**Data Privacy & Model Handling:**
+
+Predictive modelling follows an upload-based approach.
+
+- Users provide their own historical production dataset.
+- The model is trained using the uploaded data.
+- No permanent historical dataset is bundled with the application.
+- No trained model file is required in the GitHub repository.
+- The trained model is maintained in the active application session.
+- Uploading a new dataset requires a new model training process.
+
+The dataset and trained model are not intentionally written to the project repository or permanent application storage by the predictive module.
+
+**Important:** The predictive model provides decision support, not guaranteed waste outcomes. Its reliability depends on the quality, completeness and representativeness of the uploaded historical data.
+
+### 7. SOP Intelligence with RAG
+
+WasteWise allows users to upload factory SOPs and operational documents in PDF format.
+
+The system uses Retrieval-Augmented Generation (RAG) to retrieve relevant information from uploaded documents.
 
 ```text
-PDF
- ↓
+PDF / SOP
+    |
+    v
 Text Extraction
- ↓
-Chunking
- ↓
+    |
+    v
+Document Chunking
+    |
+    v
 Embeddings
- ↓
+    |
+    v
 Vector Search
- ↓
+    |
+    v
 Relevant Evidence
- ↓
-AI Answer
+    |
+    v
+AI-Generated Answer
 ```
 
-Document-based answers include source information where available.
+Document-based answers use retrieved information to support operational understanding and investigation.
 
-### 4. AI Analyst
+### 8. AI Analyst
 
-Groq combines calculated analytics, document evidence, and visual evidence to explain findings in natural language.
+Groq-powered natural-language analysis helps users interpret manufacturing data and retrieved document evidence.
 
-The AI can help answer questions such as:
+Example questions:
 
-> Which production line should we investigate first?
+- Which production line should we investigate first?
+- What are the main waste drivers?
+- Which products are contributing most to losses?
+- What does the SOP recommend?
+- What operational factors should be investigated?
 
-> What are the main loss drivers?
-
-> What does the SOP recommend?
-
-
-### 5. Investigation Recommendations
-
-WasteWise does not simply identify a problem.
-
-It can suggest practical investigation steps based on the available evidence.
-
-Example:
-
-```text
-Finding:
-Line 2 has an unusually high loss rate.
-
-Data Evidence:
-Line 2 shows higher packaging losses than other lines.
-
-SOP Evidence:
-The relevant SOP contains procedures for checking packaging equipment.
-
-Investigation Hypothesis:
-A packaging-related issue could be contributing to the elevated loss.
-
-Recommended Checks:
-1. Review Line 2 calibration records.
-2. Compare affected shifts.
-3. Inspect packaging-material lots.
-4. Verify relevant SOP compliance.
-
-Confidence:
-Medium
-```
-
-The system explicitly distinguishes evidence from hypotheses and recommendations.
+The AI analyst is intended to connect numerical findings with relevant operational information.
 
 ---
 
 ## Manufacturing Loss & Rework Model
 
-WasteWise is designed to distinguish different types of manufacturing outcomes rather than treating everything as generic "food waste."
+WasteWise is designed to distinguish different types of manufacturing outcomes rather than treating everything as generic food waste.
 
-The broader model can represent:
+The broader manufacturing model can represent:
 
 - Production
 - Process loss
@@ -175,14 +252,20 @@ For example:
 
 ```text
 Production
-    ↓
+    |
+    v
 Quality Deviation
-    ↓
+    |
+    v
 Rework
-    ↓
-Recovered Material ──► Saleable Product
-    │
-    └─────────────────► Final Loss
+    |
+    +----> Recovered Material
+    |              |
+    |              v
+    |        Saleable Product
+    |
+    v
+Final Loss
 ```
 
 This allows WasteWise to investigate questions such as:
@@ -196,24 +279,25 @@ This allows WasteWise to investigate questions such as:
 
 ## AI Trust & Safety
 
-WasteWise is a **decision-support system**, not an autonomous factory-control system.
+WasteWise is a decision-support system, not an autonomous factory-control system.
 
-The application distinguishes:
+The application distinguishes between:
 
 | Type | Example |
 |---|---|
-| **FACT** | Line 2 has a 7.12% loss rate. |
-| **INFERENCE** | The findings may be related. |
-| **RECOMMENDATION** | Review Line 2 calibration records. |
+| FACT | A production line recorded a particular loss rate. |
+| INFERENCE | The findings may be related to operating conditions. |
+| PREDICTION | A new batch is classified as high waste risk. |
+| RECOMMENDATION | Review the relevant production and calibration records. |
 
-WasteWise must not present a hypothesis as a confirmed root cause.
+WasteWise must not:
 
-It must not:
-
-- invent measurements
-- invent SOP requirements
-- make autonomous product-disposal decisions
-- make autonomous quality-approval decisions
+- Invent production measurements.
+- Present hypotheses as confirmed root causes.
+- Invent SOP requirements.
+- Guarantee predictive outcomes.
+- Make autonomous product-disposal decisions.
+- Make autonomous quality-approval decisions.
 
 When evidence is insufficient, the system should communicate that clearly.
 
@@ -222,73 +306,78 @@ When evidence is insufficient, the system should communicate that clearly.
 ## Technology Stack
 
 ### Frontend
-
 - Streamlit
 
 ### Data Processing
-
 - Python
 - Pandas
 - NumPy
 
-### Documents
+### Machine Learning
+- Scikit-learn
+- Random Forest Classifier
+- One-Hot Encoding
+- Stratified Cross-Validation
 
+### Documents
 - PyPDF
 
 ### Retrieval
-
 - FAISS
 - Embeddings
+- Vector Search
 
 ### AI
-
-- xAI / Groq
+- Groq
 - Natural-language reasoning
+- Retrieval-Augmented Generation
 
 ### Development
-
 - GitHub
 - Google Colab for experimentation when useful
 
 ### Deployment
-
 - Streamlit Community Cloud
-
-The architecture intentionally avoids unnecessary infrastructure so that the core product remains reliable and achievable within the hackathon timeframe.
-
-
 
 ---
 
 ## Project Architecture
 
 ```text
-                    ┌──────────────────┐
-                    │      User        │
-                    └────────┬─────────┘
-                             │
-              ┌──────────────┼──────────────┐
-              │                             │
-              ▼                             ▼
-          CSV/XLSX                         PDF
-              │                             │
-              ▼                             ▼
-        Python/Pandas                      RAG
-              │                             │
-              └──────────────┼──────────────┘
-                             ▼
-                      Grok Reasoning
-                             │
-                             ▼
-                    WasteWise AI Insight
-                             │
-                             ▼
-                   Human Investigation
+                    USER
+                      |
+                      v
+              WASTEWISE AI
+                      |
+         +------------+------------+
+         |                         |
+         v                         v
+    DATA UPLOAD                PDF / SOP
+     CSV / XLSX                    |
+         |                         v
+         v                    RAG PIPELINE
+   DATA PROCESSING                  |
+         |                         |
+    +----+---------+                |
+    |              |                |
+    v              v                |
+ ANALYTICS    MACHINE LEARNING      |
+    |              |                |
+    |         WASTE PREDICTION      |
+    |              |                |
+    +-------+------+----------------+
+            |
+            v
+       GROQ REASONING
+            |
+            v
+    WASTEWISE INSIGHTS
+            |
+            v
+   HUMAN INVESTIGATION
 ```
 
----
-
-As development progresses, additional analytics, data-loading, RAG, AI modules will be added to `src/`.
+The architecture intentionally avoids unnecessary infrastructure so that the application remains practical, maintainable and achievable within its development scope.
 
 ---
 
@@ -297,7 +386,8 @@ As development progresses, additional analytics, data-loading, RAG, AI modules w
 Clone the repository:
 
 ```bash
-git clone https://github.com/<your-username>/waste-wise-ai.git
+git clone https://github.com/batool4607851-code/waste-wise-ai.git
+
 cd waste-wise-ai
 ```
 
@@ -307,28 +397,7 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
----
-
-## Environment Variables
-
-Create a local `.env` file containing:
-
-```text
-XAI_API_KEY=your_api_key_here
-XAI_MODEL=your_model_name
-```
-
-Never commit `.env` or API keys to GitHub.
-
-For deployment, configure secrets through the deployment platform.
-
-The repository contains `.env.example` as a safe template.
-
----
-
-## Running the Application
-
-Run:
+Run the application:
 
 ```bash
 streamlit run app.py
@@ -338,27 +407,126 @@ The application should open in your browser.
 
 ---
 
+## Environment Variables
+
+Create a local `.env` file containing the required API credentials:
+
+```text
+XAI_API_KEY=your_api_key_here
+XAI_MODEL=your_model_name
+```
+
+Use the variable names required by your configured AI integration.
+
+Never commit `.env` files or API keys to GitHub.
+
+For deployment, configure secrets through the Streamlit Community Cloud settings.
+
+The repository contains `.env.example` as a safe configuration template.
+
+---
+
+## Predictive Modelling Workflow
+
+To use Predictive Waste Intelligence:
+
+**Step 1 – Upload Historical Data**
+
+Navigate to Data & Mapping and upload a historical production dataset.
+
+Supported predictive fields:
+
+| Standard Field | Example Dataset Column |
+|---|---|
+| production_line | Line |
+| shift | Shift |
+| product | Product |
+| production_quantity | Production_kg |
+| seal_temperature | Seal_Temp_C |
+| loss_quantity | Waste_kg |
+
+**Step 2 – Confirm Column Mapping**
+
+Ensure that the required predictive fields are correctly mapped.
+
+**Step 3 – Train the Model**
+
+Navigate to Predictive Waste Intelligence and select the model training option.
+
+**Step 4 – Evaluate Performance**
+
+Review the model's cross-validation metrics and confusion matrix.
+
+**Step 5 – Enter a New Production Batch**
+
+Provide the production conditions of the upcoming batch.
+
+**Step 6 – Generate a Prediction**
+
+WasteWise generates a high-risk or low-risk classification and an estimated high-risk score.
+
+**Step 7 – Investigate**
+
+Use the prediction as an early warning to review relevant production conditions and operational procedures.
+
+---
+
+## Model Limitations
+
+The initial predictive model is a prototype intended for experimentation and decision support.
+
+Its performance depends on:
+
+- Historical data quality
+- Number of available production records
+- Representation of high-risk and low-risk batches
+- Missing and inconsistent observations
+- Changes in production conditions over time
+
+Cross-validation provides an initial performance estimate, but future production records should be used for independent chronological validation.
+
+The initial classification model predicts waste-risk categories. It does not directly estimate the exact quantity of waste in kilograms.
+
+Future development may introduce regression-based waste quantity prediction.
+
+---
+
 ## Demo Workflow
 
 The intended demonstration flow is:
 
 ```text
-1. Upload factory data
-        ↓
-2. View manufacturing-loss dashboard
-        ↓
-3. Upload an SOP
-        ↓
-4. Ask WasteWise a question
-        ↓
-5. Retrieve relevant SOP evidence
-        ↓
-6. Combine data + SOP
-        ↓
-7. Generate an investigation finding
+1. Upload factory production data
+            |
+            v
+2. Explore manufacturing KPI dashboard
+            |
+            v
+3. Analyse manufacturing losses
+            |
+            v
+4. Investigate significant loss patterns
+            |
+            v
+5. Upload an SOP document
+            |
+            v
+6. Ask WasteWise an operational question
+            |
+            v
+7. Upload historical data for predictive modelling
+            |
+            v
+8. Train and evaluate the model
+            |
+            v
+9. Predict the risk of a new production batch
+            |
+            v
+10. Generate actionable investigation insights
 ```
 
-A synthetic demonstration dataset may be used to demonstrate the application.
+Synthetic demonstration data may be used where actual factory records are unavailable.
 
 > **Synthetic Demo Data — Not Real Factory Data**
 
@@ -366,18 +534,21 @@ A synthetic demonstration dataset may be used to demonstrate the application.
 
 ## MVP Scope
 
-The hackathon MVP focuses on:
+The WasteWise MVP focuses on:
 
-- CSV upload
-- Excel upload
+- CSV and Excel uploads
+- Data validation and mapping
 - Manufacturing-loss analytics
-- Dashboard
-- PDF/SOP upload
-- RAG
-- Natural-language AI analysis
-- Cross-source reasoning
-- Investigation recommendations
+- KPI dashboard
+- Loss analysis
+- Investigation prioritisation
 - Basic anomaly detection
+- PDF/SOP upload
+- Retrieval-Augmented Generation
+- Natural-language AI analysis
+- Predictive waste-risk classification
+- Model performance evaluation
+- New batch risk assessment
 
 The development principle is:
 
@@ -385,82 +556,77 @@ The development principle is:
 
 ---
 
-## Out of Scope
-
-The MVP does **not** attempt to build:
-
-- ERP integrations
-- IoT infrastructure
-- Live machine control
-- Autonomous factory operations
-- Advanced forecasting
-- Custom computer-vision model training
-- Predictive maintenance
-- Digital twins
-- Mobile applications
-- Autonomous product disposition
-
-These may be considered future capabilities rather than hackathon MVP requirements.
-
-
-
-
 ## Future Roadmap
+
+WasteWise is intended to evolve from manufacturing-loss intelligence into a broader AI-powered manufacturing operations platform.
 
 ```text
 Waste Intelligence
-        ↓
+        |
+        v
 Predictive Waste
-        ↓
+        |
+        v
+Waste Quantity Forecasting
+        |
+        v
 Yield Intelligence
-        ↓
+        |
+        v
 Inventory & Expiry Intelligence
-        ↓
+        |
+        v
 Quality Intelligence
-        ↓
+        |
+        v
 Computer Vision
-        ↓
+        |
+        v
 Production Optimization
-        ↓
+        |
+        v
 Factory Digital Twin
-        ↓
+        |
+        v
 AI Factory Operations OS
 ```
 
-The long-term vision is to expand WasteWise from manufacturing-loss intelligence into a broader AI operations platform for food manufacturing.
-
-
+The long-term vision is to help food manufacturers move from identifying losses to anticipating, understanding and preventing them.
 
 ---
 
 ## Development Philosophy
 
-WasteWise is intentionally built in controlled phases:
+WasteWise is developed in controlled phases:
 
 ```text
 PLAN
-  ↓
+  |
+  v
 BUILD
-  ↓
+  |
+  v
 RUN
-  ↓
+  |
+  v
 TEST
-  ↓
+  |
+  v
 FIX
-  ↓
+  |
+  v
 CHECKPOINT
-  ↓
+  |
+  v
 NEXT PHASE
 ```
 
-The data and analytics foundation is built before the higher-level AI reasoning components.
+The data and analytics foundation is built before introducing more advanced AI and predictive capabilities.
 
-This reduces technical risk and makes the application easier to test and debug.
-
-
+This reduces technical risk and makes the application easier to test, maintain and improve.
 
 ---
 
 ## License
 
-No open-source license has been selected for this hackathon repository yet.
+No open-source license has been selected for this repository yet.
